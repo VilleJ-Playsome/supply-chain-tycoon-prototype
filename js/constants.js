@@ -8,9 +8,14 @@ export const BUILDINGS = {
   shop:       {name:'Shop',      short:'Shop',     out:null,     rate:6.0, inputs:[],                                       depth:0},
 };
 
-export const PRICE   = {ore:0.4, rubber:0.4, steel:1.2, wheel:1.5, body:3.5, car:12};
+export const PRICE   = {ore:0.5, rubber:0.6, steel:3.0, wheel:3.75, body:16, car:120};
 export const RNAME   = {ore:'Iron ore',rubber:'Rubber',steel:'Steel',wheel:'Wheel',body:'Car body',car:'Car'};
-export const BASE_COST = {shop:30, mine:20, tapper:20, smelter:55, wheelworks:75, bodyshop:150, assembler:300};
+export const BASE_COST = {shop:90, mine:30, tapper:35, smelter:180, wheelworks:240, bodyshop:900, assembler:5000};
+export const COPY_GROWTH = {shop:1.75, mine:1.38, tapper:1.4, smelter:1.48, wheelworks:1.52, bodyshop:1.6, assembler:1.7};
+export const SPEED_BASE_COST = {shop:120, mine:75, tapper:85, smelter:400, wheelworks:540, bodyshop:1800, assembler:5200};
+export const SPEED_COST_GROWTH = 2.05;
+export const UNLOCK_BASE_COST = 60;
+export const UNLOCK_COST_GROWTH = 1.7;
 export const PROD_ORDER = ['mine','tapper','smelter','wheelworks','bodyshop','assembler'];
 export const ICON    = {mine:'⛏️',tapper:'🌳',smelter:'🔥',wheelworks:'🛞',bodyshop:'🛠️',assembler:'⚙️',shop:'🏪'};
 export const RESICON = {ore:'🪨',rubber:'🟤',steel:'🔩',wheel:'🛞',body:'🚙',car:'🚗'};

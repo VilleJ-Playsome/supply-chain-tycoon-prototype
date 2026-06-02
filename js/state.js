@@ -1,4 +1,12 @@
-import { BUILDINGS, BASE_COST } from './constants.js';
+import {
+  BUILDINGS,
+  BASE_COST,
+  COPY_GROWTH,
+  SPEED_BASE_COST,
+  SPEED_COST_GROWTH,
+  UNLOCK_BASE_COST,
+  UNLOCK_COST_GROWTH,
+} from './constants.js';
 
 export const S = {
   cash: 60,
@@ -23,10 +31,10 @@ export function newB(type, target) {
 export const baySum      = b => Object.values(b.bay).reduce((a, c) => a + c, 0);
 export const firstShop   = () => S.grid.findIndex(s => s && s.type === 'shop');
 export const openCount   = () => S.open.filter(Boolean).length;
-export const unlockCost  = () => Math.round(35 * Math.pow(1.45, openCount() - 4));
+export const unlockCost  = () => Math.round(UNLOCK_BASE_COST * Math.pow(UNLOCK_COST_GROWTH, openCount() - 4));
 export const copies      = type => S.grid.filter(s => s && s.type === type).length;
-export const cost        = type => Math.round(BASE_COST[type] * Math.pow(1.4, copies(type)));
-export const speedCost   = type => Math.round(15 * Math.pow(1.55, S.speed[type]));
+export const cost        = type => Math.round(BASE_COST[type] * Math.pow(COPY_GROWTH[type], copies(type)));
+export const speedCost   = type => Math.round(SPEED_BASE_COST[type] * Math.pow(SPEED_COST_GROWTH, S.speed[type]));
 
 export function validTarget(srcIdx, tgtIdx) {
   const s = S.grid[srcIdx], t = S.grid[tgtIdx];
