@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SUPPLY LINE — idle prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="topbar">
+    <div><h1>🏭 Supply Line</h1><div class="sub">idle prototype · route the parts</div></div>
+    <div class="readout">
+      <div class="stat"><div class="k">Cash</div><div class="v">$<span id="cash">0</span></div></div>
+      <div class="stat"><div class="k">Income</div><div class="v"><span id="rate">0</span><small>/s</small></div></div>
+    </div>
+    <div class="away"><span class="lbl">simulate away</span><button id="away1">🕐 +1 h</button><button id="away8">🌙 +8 h</button></div>
+  </div>
+
+  <div class="wrap">
+    <div>
+      <div class="gridwrap"><svg id="roads"></svg><div class="grid" id="grid"></div><svg id="routes"></svg></div>
+    </div>
+    <div>
+      <div class="panel"><h2>Part value · deeper = richer</h2><div class="pl" id="parts"></div></div>
+      <div class="panel"><h2>Read the line</h2><div class="hint" id="bottleneck">—</div></div>
+      <div class="panel"><h2>How it works</h2><div class="hint">Each building runs at its own <b>speed</b> (upgrade per building). The <b>fed</b> line shows how much of each input it's getting per second vs. how much it needs at full speed — green means kept up, red means starved. The <b>running</b> bar shows how fast it's actually working out of its max. You pick where each output <b>routes</b> — into a downstream building or a <b>Shop</b>, which only sells so fast. Place multiples to keep up: one Wheel makes 2/s but an Assembler needs 4/s.</div></div>
+    </div>
+  </div>
+
+  <div id="hint" class="modehint" hidden></div>
+  <div id="menu" class="ctxmenu" hidden></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
