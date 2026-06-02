@@ -21,6 +21,8 @@ button{font-family:var(--mono);cursor:pointer;border:1px solid var(--line);backg
 button:hover{border-color:var(--dim);filter:brightness(1.13)} button:active{transform:translateY(1px)}
 button:disabled{opacity:.32;cursor:not-allowed;filter:none}
 button.go{border-color:var(--teal);color:var(--teal)} button.route{border-color:var(--blue);color:var(--blue)}
+.save-flash{font-size:11px;letter-spacing:.1em;color:var(--teal);opacity:0;transition:opacity .3s}
+.save-flash.show{opacity:1}
 .wrap{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
 @media(max-width:780px){.wrap{grid-template-columns:1fr}}
 .gridwrap{position:relative;padding:20px;border-radius:16px;border:1px solid #3c4655;
