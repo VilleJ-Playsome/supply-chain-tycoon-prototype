@@ -9,6 +9,7 @@ import {
   RESICON,
   RNAME,
   TIERCOL,
+  TRUCK_COL,
 } from './constants.js';
 import {
   S,
@@ -127,9 +128,9 @@ function rectOf(i) {
 }
 
 function drawRoutes() {
-  const wrap = $('grid').parentElement, roadsSvg = $('roads'), svg = $('routes');
+  const wrap = $('grid').parentElement, roadsSvg = $('roads'), svg = $('routes'), truckSvg = $('trucks');
   const W = wrap.clientWidth, H = wrap.clientHeight;
-  [roadsSvg, svg].forEach(el => { el.setAttribute('width', W); el.setAttribute('height', H); });
+  [roadsSvg, svg, truckSvg].forEach(el => { el.setAttribute('width', W); el.setAttribute('height', H); });
 
   const r0 = rectOf(0), r1 = rectOf(1), r2 = rectOf(2), r3 = rectOf(3);
   const c4 = rectOf(4), c8 = rectOf(8), c12 = rectOf(12);
@@ -183,7 +184,7 @@ function drawRoutes() {
       if (ar < br) { Ry = hy[br]; entryY = B.T; } else { Ry = hy[br + 1]; entryY = B.B; }
       d = `M ${exitX} ${A.cy} L ${Rx} ${A.cy} L ${Rx} ${Ry} L ${B.cx} ${Ry} L ${B.cx} ${entryY}`;
     }
-    paths += `<path class="flow" d="${d}" fill="none" stroke="${col}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.95" marker-end="url(#${mk})"/>`;
+    paths += `<path id="route-${i}-${s.target}" class="flow" d="${d}" fill="none" stroke="${col}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.95" marker-end="url(#${mk})"/>`;
   });
   svg.innerHTML = defs + paths;
 }
@@ -288,6 +289,21 @@ export function renderBottleneck() {
   el.innerHTML = `<b>${b.short} at ${Math.round((s.load || 0) * 100)}%.</b> ${why}`;
 }
 
+export function renderTrucks() {
+  const truckSvg = $('trucks');
+  if (!truckSvg) return;
+  let out = '';
+  S.trucks.forEach(tr => {
+    const pathEl = document.getElementById(`route-${tr.from}-${tr.to}`);
+    if (!pathEl) return;
+    const len = pathEl.getTotalLength();
+    const pt = pathEl.getPointAtLength(len * tr.progress);
+    const col = TRUCK_COL[tr.res] || '#ccc';
+    out += `<rect x="${pt.x - 5}" y="${pt.y - 5}" width="10" height="10" rx="2" fill="${col}" stroke="#1a1f28" stroke-width="1.5"/>`;
+  });
+  truckSvg.innerHTML = out;
+}
+
 export function renderLive() {
   $('cash').textContent = money(S.cash);
   const r = $('rate');
@@ -310,5 +326,6 @@ export function renderLive() {
   });
   document.querySelectorAll('#menu [data-cost]').forEach(btn => { btn.disabled = btn.dataset.max === 'true' || S.cash < +btn.dataset.cost; });
   renderBottleneck();
+  renderTrucks();
   if (rebuild) render();
 }

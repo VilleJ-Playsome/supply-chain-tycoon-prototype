@@ -1,4 +1,4 @@
-import { BUILDINGS, PROD_ORDER, OUT_CAP, IN_CAP, BAY_CAP } from './constants.js';
+import { BUILDINGS, PROD_ORDER, OUT_CAP, IN_CAP, BAY_CAP, TRUCK_BATCH, TRUCK_SPEED, MAX_TRUCKS_PER_ROUTE } from './constants.js';
 import { S, rateOf, cleanTargets, inputQty, priceOf } from './state.js';
 
 export function tick(dt) {
@@ -9,17 +9,38 @@ export function tick(dt) {
   const a = Math.min(1, dt / 0.5), deliv = {};
   function gotDelivered(ti, res, mv) { (deliv[ti] = deliv[ti] || {}); deliv[ti][res] = (deliv[ti][res] || 0) + mv; }
 
+  // Spawn trucks from buildings that have output ready
   S.grid.forEach((s, i) => {
-    if (!s || s.type === 'shop' || s.cooldown > 0 || !s.out) return;
+    if (!s || s.type === 'shop' || s.cooldown > 0 || s.out < TRUCK_BATCH) return;
     const res = BUILDINGS[s.type].out, ti = s.target, t = ti == null ? null : S.grid[ti];
     if (!t) return;
-    if (t.type === 'shop') {
-      const room = BAY_CAP - baySum(t), mv = Math.min(s.out, room);
-      if (mv > 0) { t.bay[res] = (t.bay[res] || 0) + mv; s.out -= mv; gotDelivered(ti, res, mv); }
-    } else if (BUILDINGS[t.type].inputs.some(x => x.res === res)) {
-      const room = IN_CAP - (t.inbuf[res] || 0), mv = Math.min(s.out, room);
-      if (mv > 0) { t.inbuf[res] = (t.inbuf[res] || 0) + mv; s.out -= mv; gotDelivered(ti, res, mv); }
+    const accepts = t.type === 'shop'
+      ? true
+      : BUILDINGS[t.type].inputs.some(x => x.res === res);
+    if (!accepts) return;
+    const onRoute = S.trucks.filter(tr => tr.from === i && tr.to === ti).length;
+    if (onRoute >= MAX_TRUCKS_PER_ROUTE) return;
+    s.out -= TRUCK_BATCH;
+    S.trucks.push({ from: i, to: ti, res, qty: TRUCK_BATCH, progress: 0 });
+  });
+
+  // Advance trucks and deliver on arrival
+  S.trucks.forEach(tr => { tr.progress = Math.min(1, tr.progress + TRUCK_SPEED * dt); });
+  S.trucks = S.trucks.filter(tr => {
+    if (tr.progress < 1) return true;
+    const t = S.grid[tr.to];
+    if (t) {
+      if (t.type === 'shop') {
+        const room = BAY_CAP - baySum(t), mv = Math.min(tr.qty, room);
+        if (mv > 0) { t.bay[tr.res] = (t.bay[tr.res] || 0) + mv; gotDelivered(tr.to, tr.res, mv); }
+        else { const src = S.grid[tr.from]; if (src) src.out = Math.min(OUT_CAP, src.out + tr.qty); }
+      } else if (BUILDINGS[t.type].inputs.some(x => x.res === tr.res)) {
+        const room = IN_CAP - (t.inbuf[tr.res] || 0), mv = Math.min(tr.qty, room);
+        if (mv > 0) { t.inbuf[tr.res] = (t.inbuf[tr.res] || 0) + mv; gotDelivered(tr.to, tr.res, mv); }
+        else { const src = S.grid[tr.from]; if (src) src.out = Math.min(OUT_CAP, src.out + tr.qty); }
+      }
     }
+    return false;
   });
 
   for (const type of PROD_ORDER) {

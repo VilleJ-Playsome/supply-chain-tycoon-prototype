@@ -26,6 +26,7 @@ export const S = {
   efficiency: {},
   quality: {},
   open: Array(16).fill(false),
+  trucks: [],
 };
 
 export const rateOf = s => BUILDINGS[s.type].rate * (1 + 0.25 * S.speed[s.type]);
@@ -80,6 +81,7 @@ export function resetGame() {
   S.cashRate = 0;
   S.grid = Array(16).fill(null);
   S.open = Array(16).fill(false);
+  S.trucks = [];
   for (const k in BUILDINGS) {
     S.speed[k] = 0;
     S.efficiency[k] = 0;

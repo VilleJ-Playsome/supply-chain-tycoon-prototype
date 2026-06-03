@@ -41,3 +41,8 @@ export const IN_CAP        = 15;
 export const BAY_CAP       = 30;
 export const MOVE_COOLDOWN = 3;
 export const OFFLINE_STEP  = 2;
+
+export const TRUCK_BATCH         = 1.5;  // units per truck
+export const TRUCK_SPEED         = 0.55; // progress/s — ~1.8s travel time
+export const MAX_TRUCKS_PER_ROUTE = 3;
+export const TRUCK_COL = {ore:'#8a93a0',rubber:'#a0724a',steel:'#3fb6a0',wheel:'#2a9d8f',body:'#cf9244',car:'#e6a23c'};
