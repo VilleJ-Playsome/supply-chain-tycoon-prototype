@@ -20,6 +20,8 @@ button{font-family:var(--mono);cursor:pointer;border:1px solid var(--line);backg
   padding:7px 11px;border-radius:7px;font-size:12px;letter-spacing:.03em;transition:transform .1s,border-color .1s,filter .1s}
 button:hover{border-color:var(--dim);filter:brightness(1.13)} button:active{transform:translateY(1px)}
 button:disabled{opacity:.32;cursor:not-allowed;filter:none}
+input{font-family:var(--mono);border:1px solid var(--line);background:#12161c;color:var(--ink);border-radius:7px;padding:7px 9px;font-size:12px}
+input:focus{outline:none;border-color:var(--blue)}
 button.go{border-color:var(--teal);color:var(--teal)} button.route{border-color:var(--blue);color:var(--blue)}
 .save-flash{font-size:11px;letter-spacing:.1em;color:var(--teal);opacity:0;transition:opacity .3s}
 .save-flash.show{opacity:1}
@@ -96,4 +98,8 @@ button.go{border-color:var(--teal);color:var(--teal)} button.route{border-color:
 .modehint[hidden]{display:none}
 .modehint button{font-family:var(--mono);border:1px solid var(--line);border-radius:999px;padding:5px 12px;background:#222831;color:var(--ink);cursor:pointer;font-size:11px}
 .modehint button:hover{border-color:var(--red)}
+.cheats{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;padding:12px 0;border-top:1px solid var(--line)}
+.cheat-title{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-right:4px}
+.cheat-subtitle{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-left:8px}
+.cheats input{width:128px}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.muted{color:var(--faint);font-size:11px}

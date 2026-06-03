@@ -1,12 +1,44 @@
-import { BUILDINGS, ICON, RESICON, TIERCOL, PRICE, RNAME, MOVE_COOLDOWN } from './constants.js';
-import { S, rateOf, copies, cost, speedCost, unlockCost, firstShop, validTarget } from './state.js';
+import {
+  BUILDINGS,
+  EFFICIENCY_MAX_LEVEL,
+  EFFICIENCY_STEP,
+  ICON,
+  MOVE_COOLDOWN,
+  QUALITY_INPUT_STEP,
+  QUALITY_VALUE_STEP,
+  RESICON,
+  RNAME,
+  TIERCOL,
+} from './constants.js';
+import {
+  S,
+  cost,
+  copies,
+  efficiencyCost,
+  firstShop,
+  hasEfficiencyUpgrade,
+  inputQty,
+  isEfficiencyMaxed,
+  priceOf,
+  qualityCost,
+  rateOf,
+  speedCost,
+  unlockCost,
+  validTarget,
+} from './state.js';
 
 // Shared UI state — mutated by both this module and events.js
 export const ui = { menuFor: null, moveFrom: null, routeMode: null };
+function clearUiState() {
+  ui.menuFor = null;
+  ui.moveFrom = null;
+  ui.routeMode = null;
+}
 
 export const $ = id => document.getElementById(id);
 
 const money     = n => n >= 1e6 ? (n / 1e6).toFixed(2) + 'M' : n >= 1e4 ? Math.round(n).toLocaleString() : n.toFixed(n < 100 ? 1 : 0);
+const qtyText   = n => Number.isInteger(n) ? n : n.toFixed(n < 10 ? 2 : 1).replace(/\.?0+$/, '');
 const loadColor = l => l >= 0.85 ? 'var(--teal)' : l >= 0.5 ? 'var(--amber)' : 'var(--red)';
 const tierTag   = b => b.short === 'Shop' ? 'shop' : 'd' + b.depth;
 const catLabel  = b => b.short === 'Shop' ? 'shop' : (b.depth === 0 ? 'raw' : b.depth === 3 ? 'final' : 'part');
@@ -19,7 +51,7 @@ function feedHTML(s) {
   if (s.type === 'shop') return `taking in ${(s.fedIn || 0).toFixed(1)}/s`;
   if (!b.inputs.length) return 'no inputs';
   return 'fed ' + b.inputs.map(inp => {
-    const need = inp.qty * full, f = (s.fed && s.fed[inp.res]) || 0, stock = (s.inbuf && s.inbuf[inp.res]) || 0;
+    const need = inputQty(s.type, inp) * full, f = (s.fed && s.fed[inp.res]) || 0, stock = (s.inbuf && s.inbuf[inp.res]) || 0;
     const col = (f >= need * 0.97) ? 'var(--teal)' : (stock > 1 ? 'var(--amber)' : 'var(--red)');
     return `<span style="color:${col}">${inp.res.slice(0, 4)} ${f.toFixed(1)}/${need.toFixed(1)}</span>`;
   }).join(' · ');
@@ -59,7 +91,7 @@ export function render() {
       sub = `sells up to ${rateOf(s).toFixed(1)}/s · L${S.speed[s.type]}`;
     } else {
       const tgt = s.target == null ? '<b class="un">unrouted</b>' : '→ <b>' + tname(s.target) + '</b>';
-      const recipe = b.inputs.length ? b.inputs.map(x => x.qty + '·' + x.res.slice(0, 3)).join(' ') + '►' + b.out : b.out + ' source';
+      const recipe = b.inputs.length ? b.inputs.map(x => qtyText(inputQty(s.type, x)) + '·' + x.res.slice(0, 3)).join(' ') + '►' + b.out : b.out + ' source';
       sub = `${recipe} · L${S.speed[s.type]} ${tgt}`;
     }
 
@@ -79,7 +111,7 @@ export function render() {
 
   let p = '';
   ['ore', 'rubber', 'steel', 'wheel', 'body', 'car'].forEach(r => {
-    p += `<div class="prow"><span class="pemoji">${RESICON[r]}</span><span class="pname">${RNAME[r]}</span><span class="pv">$${PRICE[r].toFixed(2)}</span></div>`;
+    p += `<div class="prow"><span class="pemoji">${RESICON[r]}</span><span class="pname">${RNAME[r]}</span><span class="pv">$${priceOf(r).toFixed(2)}</span></div>`;
   });
   $('parts').innerHTML = p;
 
@@ -186,14 +218,26 @@ export function renderMenu() {
       const b = BUILDINGS[k], c = cost(k);
       btns += `<button class="placebtn" data-place="${k}" data-cost="${c}" ${S.cash < c ? 'disabled' : ''}>
         <span><span class="pemoji">${ICON[k]}</span><span class="tag ${tierTag(b)}">${k === 'shop' ? 'shop' : 'T' + b.depth}</span> ${b.name} · $${c}</span>
-        <span class="pc">${k === 'shop' ? 'sells ' + b.rate + '/s' : ((b.inputs.length ? b.inputs.map(x => (x.qty > 1 ? x.qty + '×' : '') + RESICON[x.res]).join(' + ') + ' → ' : ' → ') + RESICON[b.out] + ' · ' + b.rate + '/s')}</span></button>`;
+        <span class="pc">${k === 'shop' ? 'sells ' + b.rate + '/s' : ((b.inputs.length ? b.inputs.map(x => { const q = inputQty(k, x); return (q > 1 ? qtyText(q) + '×' : '') + RESICON[x.res]; }).join(' + ') + ' → ' : ' → ') + RESICON[b.out] + ' · ' + b.rate + '/s')}</span></button>`;
     }
     html = `<div class="mhead">Build here</div><div class="placegrid col">${btns}</div>`;
   } else {
     const b = BUILDINGS[s.type], sc = speedCost(s.type), n = copies(s.type), next = (b.rate * (1 + 0.25 * (S.speed[s.type] + 1))).toFixed(1);
     const upLabel = (s.type === 'shop' ? 'sell rate' : 'speed') + ` → ${next}/s · $${sc}`;
+    const eLevel = S.efficiency[s.type] || 0, ec = efficiencyCost(s.type);
+    const eMax = isEfficiencyMaxed(s.type);
+    const effBtn = hasEfficiencyUpgrade(s.type)
+      ? `<button class="go" data-act="eff" data-cost="${ec}" data-max="${eMax}" ${S.cash < ec || eMax ? 'disabled' : ''}>${eMax ? `Efficiency max · -${Math.round(EFFICIENCY_STEP * EFFICIENCY_MAX_LEVEL * 100)}% inputs` : `⬇ Upgrade efficiency · -${Math.round(EFFICIENCY_STEP * 100)}% inputs · $${ec}`}</button>`
+      : '';
+    const qc = qualityCost(s.type);
+    const qInputs = b.inputs.length ? `, +${Math.round(QUALITY_INPUT_STEP * 100)}% inputs` : '';
+    const qualBtn = s.type === 'shop'
+      ? ''
+      : `<button class="go" data-act="qual" data-cost="${qc}" ${S.cash < qc ? 'disabled' : ''}>✦ Upgrade quality · +${Math.round(QUALITY_VALUE_STEP * 100)}% value${qInputs} · $${qc}</button>`;
     html = `<div class="mhead">${b.name}${n > 1 ? ` · all ${n}` : ''}<span class="mnow">${s.type === 'shop' ? 'sell point' : 'now ' + rateOf(s).toFixed(2) + '/s'}</span></div>
       <button class="go" data-act="up" data-cost="${sc}" ${S.cash < sc ? 'disabled' : ''}>⏫ Upgrade ${upLabel}</button>
+      ${effBtn}
+      ${qualBtn}
       ${s.type === 'shop' ? '' : `<button data-act="route">↗ Set route</button>`}
       <button data-act="move">✥ Move (${MOVE_COOLDOWN}s downtime)</button>
       <button class="danger" data-act="remove">✕ Remove</button>`;
@@ -204,9 +248,11 @@ export function renderMenu() {
 export function renderHint() {
   const el = $('hint');
   if (ui.routeMode != null) {
+    if (!S.grid[ui.routeMode]) { clearUiState(); el.hidden = true; el.innerHTML = ''; return; }
     el.hidden = false;
     el.innerHTML = `<span>Routing <b>${BUILDINGS[S.grid[ui.routeMode].type].short}</b> — click a highlighted building or shop.</span><button data-h="cancel">Cancel</button>`;
   } else if (ui.moveFrom != null) {
+    if (!S.grid[ui.moveFrom]) { clearUiState(); el.hidden = true; el.innerHTML = ''; return; }
     el.hidden = false;
     el.innerHTML = `<span>Moving <b>${BUILDINGS[S.grid[ui.moveFrom].type].short}</b> — click an open empty plot.</span><button data-h="cancel">Cancel</button>`;
   } else {
@@ -231,7 +277,7 @@ export function renderBottleneck() {
   } else if (s.target == null) {
     why = `it's <b>unrouted</b> — set a route to a downstream building or a shop.`;
   } else if (b.inputs.length) {
-    const low = b.inputs.filter(x => (s.inbuf[x.res] || 0) < x.qty);
+    const low = b.inputs.filter(x => (s.inbuf[x.res] || 0) < inputQty(s.type, x));
     if (low.length) why = `starved of <b>${low.map(x => x.res).join(', ')}</b> — route ${low.length > 1 ? 'producers' : 'a producer'} into it, or add/upgrade upstream capacity.`;
     else why = `its output is backing up — its target can't take more (upgrade or duplicate the target, or upgrade the shop).`;
   } else {
@@ -262,7 +308,7 @@ export function renderLive() {
     if (s.cooldown > 0) { if (cool) cool.textContent = 'MOVING ' + s.cooldown.toFixed(1) + 's'; else rebuild = true; }
     else if (cool) { rebuild = true; }
   });
-  document.querySelectorAll('#menu [data-cost]').forEach(btn => { btn.disabled = S.cash < +btn.dataset.cost; });
+  document.querySelectorAll('#menu [data-cost]').forEach(btn => { btn.disabled = btn.dataset.max === 'true' || S.cash < +btn.dataset.cost; });
   renderBottleneck();
   if (rebuild) render();
 }

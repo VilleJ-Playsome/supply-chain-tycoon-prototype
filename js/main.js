@@ -1,15 +1,27 @@
 import { tick } from './tick.js';
-import { render, renderLive } from './ui.js';
+import { render, renderLive, ui } from './ui.js';
 import { initEvents } from './events.js';
-import { saveGame, loadGame, deleteSave, hasSave } from './save.js';
+import { resetGame } from './state.js';
+import { saveGame, loadGame, deleteSave } from './save.js';
 
 initEvents();
 loadGame();
 render();
 
+function clearUiState() {
+  ui.menuFor = null;
+  ui.moveFrom = null;
+  ui.routeMode = null;
+}
+
 document.getElementById('btn-save').addEventListener('click', () => { saveGame(); flashSave('Saved!'); });
 document.getElementById('btn-reset').addEventListener('click', () => {
-  if (confirm('Delete save and reset? This cannot be undone.')) { deleteSave(); location.reload(); }
+  deleteSave();
+  clearUiState();
+  resetGame();
+  saveGame();
+  render();
+  flashSave('Reset!');
 });
 
 function flashSave(msg) {

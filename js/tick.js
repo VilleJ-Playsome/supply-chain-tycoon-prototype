@@ -1,5 +1,5 @@
-import { BUILDINGS, PROD_ORDER, OUT_CAP, IN_CAP, BAY_CAP, PRICE } from './constants.js';
-import { S, rateOf, cleanTargets } from './state.js';
+import { BUILDINGS, PROD_ORDER, OUT_CAP, IN_CAP, BAY_CAP } from './constants.js';
+import { S, rateOf, cleanTargets, inputQty, priceOf } from './state.js';
 
 export function tick(dt) {
   const c0 = S.cash;
@@ -31,9 +31,9 @@ export function tick(dt) {
         s.out += p; s.load = cap > 0 ? p / cap : 0;
       } else {
         let mo = cap;
-        for (const inp of def.inputs) mo = Math.min(mo, (s.inbuf[inp.res] || 0) / inp.qty);
+        for (const inp of def.inputs) mo = Math.min(mo, (s.inbuf[inp.res] || 0) / inputQty(type, inp));
         mo = Math.min(mo, OUT_CAP - s.out); mo = Math.max(0, mo);
-        for (const inp of def.inputs) s.inbuf[inp.res] = (s.inbuf[inp.res] || 0) - mo * inp.qty;
+        for (const inp of def.inputs) s.inbuf[inp.res] = (s.inbuf[inp.res] || 0) - mo * inputQty(type, inp);
         s.out += mo; s.load = cap > 0 ? mo / cap : 0;
       }
       s.runF += (s.load - s.runF) * a;
@@ -46,7 +46,7 @@ export function tick(dt) {
     for (const res in s.bay) {
       if (sold >= sellable) break;
       const take = Math.min(s.bay[res], sellable - sold);
-      s.bay[res] -= take; S.cash += take * PRICE[res]; sold += take;
+      s.bay[res] -= take; S.cash += take * priceOf(res); sold += take;
     }
     s.load = sellable > 0 ? sold / sellable : 0;
     s.runF += (s.load - s.runF) * a;

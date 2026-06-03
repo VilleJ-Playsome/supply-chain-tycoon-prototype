@@ -11,12 +11,11 @@
 </head>
 <body>
   <div class="topbar">
-    <div><h1>🏭 Supply Line</h1><div class="sub">idle prototype · route the parts</div></div>
+    <div><h1>🏭 Supply Line</h1><div class="sub">By Ville @ Playsome · 6/2026</div></div>
     <div class="readout">
       <div class="stat"><div class="k">Cash</div><div class="v">$<span id="cash">0</span></div></div>
       <div class="stat"><div class="k">Income</div><div class="v"><span id="rate">0</span><small>/s</small></div></div>
     </div>
-    <div class="away"><span class="lbl">simulate away</span><button id="away1">🕐 +1 h</button><button id="away8">🌙 +8 h</button></div>
     <div class="away"><button id="btn-save">💾 Save</button><button id="btn-reset">🗑 Reset</button><span id="save-status" class="save-flash"></span></div>
   </div>
 
@@ -33,6 +32,17 @@
 
   <div id="hint" class="modehint" hidden></div>
   <div id="menu" class="ctxmenu" hidden></div>
+  <div class="cheats">
+    <div class="cheat-title">Cheats</div>
+    <input id="cheat-cash" type="number" min="0" step="1000" value="100000">
+    <button id="cheat-set-cash">Set cash</button>
+    <button id="cheat-add-10k">+$10K</button>
+    <button id="cheat-add-1m">+$1M</button>
+    <span class="cheat-subtitle">Simulate away</span>
+    <button id="away1">🕐 +1 h</button>
+    <button id="away8">🌙 +8 h</button>
+    <button id="cheat-unlock">Unlock plots</button>
+  </div>
 
   <script type="module" src="js/main.js"></script>
 </body>

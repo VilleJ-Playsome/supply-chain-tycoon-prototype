@@ -9,6 +9,8 @@ export function saveGame() {
     cash: S.cash,
     cashRate: S.cashRate,
     speed: { ...S.speed },
+    efficiency: { ...S.efficiency },
+    quality: { ...S.quality },
     open: [...S.open],
     grid: S.grid.map(s => {
       if (!s) return null;
@@ -31,7 +33,11 @@ export function loadGame() {
 
     S.cash = data.cash;
     S.cashRate = data.cashRate;
-    for (const k in data.speed) S.speed[k] = data.speed[k];
+    for (const k in BUILDINGS) {
+      S.speed[k] = data.speed?.[k] || 0;
+      S.efficiency[k] = data.efficiency?.[k] || 0;
+      S.quality[k] = data.quality?.[k] || 0;
+    }
     data.open.forEach((v, i) => S.open[i] = v);
     data.grid.forEach((saved, i) => {
       if (!saved) { S.grid[i] = null; return; }
