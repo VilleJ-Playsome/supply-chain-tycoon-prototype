@@ -111,7 +111,7 @@ export function render() {
   drawRoutes();
 
   let p = '';
-  ['ore', 'rubber', 'steel', 'wheel', 'body', 'car'].forEach(r => {
+  ['ore', 'rubber', 'sand', 'steel', 'wheel', 'silicon', 'body', 'chip', 'car'].forEach(r => {
     p += `<div class="prow"><span class="pemoji">${RESICON[r]}</span><span class="pname">${RNAME[r]}</span><span class="pv">$${priceOf(r).toFixed(2)}</span></div>`;
   });
   $('parts').innerHTML = p;
@@ -215,7 +215,7 @@ export function renderMenu() {
       <div class="mnote">Expands your buildable area. Cost rises with each unlock.</div>`;
   } else if (!s) {
     let btns = '';
-    for (const k of ['shop', 'mine', 'tapper', 'smelter', 'wheelworks', 'bodyshop', 'assembler']) {
+    for (const k of ['shop', 'mine', 'tapper', 'sandpit', 'smelter', 'wheelworks', 'refinery', 'bodyshop', 'chipfab', 'assembler']) {
       const b = BUILDINGS[k], c = cost(k);
       btns += `<button class="placebtn" data-place="${k}" data-cost="${c}" ${S.cash < c ? 'disabled' : ''}>
         <span><span class="pemoji">${ICON[k]}</span><span class="tag ${tierTag(b)}">${k === 'shop' ? 'shop' : 'T' + b.depth}</span> ${b.name} · $${c}</span>
