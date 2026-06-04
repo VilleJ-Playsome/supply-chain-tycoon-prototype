@@ -11,6 +11,7 @@ import {
   TIERCOL,
   TRUCK_COL,
 } from './constants.js';
+import { ICON_SVG, RES_SVG } from './icons.js';
 import {
   S,
   cost,
@@ -96,9 +97,9 @@ export function render() {
       sub = `${recipe} · L${S.speed[s.type]} ${tgt}`;
     }
 
-    h += `<div class="${cls} ${isShop ? 'shop' : ''}" data-i="${i}">
-      <span class="stripe" style="background:${tc.s}"></span>
-      <div class="hd"><span class="ico" style="background:${tc.c}">${ICON[s.type]}</span>
+    h += `<div class="${cls} ${isShop ? 'shop' : ''} t-${tierTag(b)}" data-i="${i}">
+      <span class="stripe"></span>
+      <div class="hd"><span class="ico">${ICON_SVG[s.type]}</span>
         <div class="ttl"><span class="tag ${tierTag(b)}">${catLabel(b)}</span><div class="nm">${b.short}</div></div></div>
       <div class="lvl">${sub}</div>
       <div class="feed">${feedHTML(s)}</div>
@@ -112,7 +113,7 @@ export function render() {
 
   let p = '';
   ['ore', 'rubber', 'sand', 'steel', 'wheel', 'silicon', 'body', 'chip', 'car'].forEach(r => {
-    p += `<div class="prow"><span class="pemoji">${RESICON[r]}</span><span class="pname">${RNAME[r]}</span><span class="pv">$${priceOf(r).toFixed(2)}</span></div>`;
+    p += `<div class="prow"><span class="pemoji">${RES_SVG[r]}</span><span class="pname">${RNAME[r]}</span><span class="pv">$${priceOf(r).toFixed(2)}</span></div>`;
   });
   $('parts').innerHTML = p;
 
@@ -218,8 +219,8 @@ export function renderMenu() {
     for (const k of ['shop', 'mine', 'tapper', 'sandpit', 'smelter', 'wheelworks', 'refinery', 'bodyshop', 'chipfab', 'assembler']) {
       const b = BUILDINGS[k], c = cost(k);
       btns += `<button class="placebtn" data-place="${k}" data-cost="${c}" ${S.cash < c ? 'disabled' : ''}>
-        <span><span class="pemoji">${ICON[k]}</span><span class="tag ${tierTag(b)}">${k === 'shop' ? 'shop' : 'T' + b.depth}</span> ${b.name} · $${c}</span>
-        <span class="pc">${k === 'shop' ? 'sells ' + b.rate + '/s' : ((b.inputs.length ? b.inputs.map(x => { const q = inputQty(k, x); return (q > 1 ? qtyText(q) + '×' : '') + RESICON[x.res]; }).join(' + ') + ' → ' : ' → ') + RESICON[b.out] + ' · ' + b.rate + '/s')}</span></button>`;
+        <span><span class="pemoji">${ICON_SVG[k]}</span><span class="tag ${tierTag(b)}">${k === 'shop' ? 'shop' : 'T' + b.depth}</span> ${b.name} · $${c}</span>
+        <span class="pc">${k === 'shop' ? 'sells ' + b.rate + '/s' : ((b.inputs.length ? b.inputs.map(x => { const q = inputQty(k, x); return (q > 1 ? qtyText(q) + '×' : '') + RES_SVG[x.res]; }).join(' + ') + ' → ' : ' → ') + RES_SVG[b.out] + ' · ' + b.rate + '/s')}</span></button>`;
     }
     html = `<div class="mhead">Build here</div><div class="placegrid col">${btns}</div>`;
   } else {
