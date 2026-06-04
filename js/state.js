@@ -21,12 +21,15 @@ import {
 export const S = {
   cash: 0,
   cashRate: 0,
+  _earnAcc: 0,  // cash earned in the current rate window
+  _earnTime: 0, // seconds elapsed in the current rate window
   grid: Array(16).fill(null),
   speed: {},
   efficiency: {},
   quality: {},
   open: Array(16).fill(false),
   trucks: [],
+  transit: [], // [{from, to, res, qty, ttl}] – items in flight, trucks are visual only
 };
 
 export const rateOf = s => BUILDINGS[s.type].rate * (1 + 0.25 * S.speed[s.type]);
@@ -42,7 +45,7 @@ export const inputQty = (type, inp) => inp.qty * qualityInputMultiplier(type) * 
 export function newB(type, target) {
   const b = {type, target: (target == null ? null : target), load: 0, runF: 0, cooldown: 0};
   if (type === 'shop') { b.bay = {}; b.fedIn = 0; }
-  else { b.out = 0; b.inbuf = {}; b.fed = {}; }
+  else { b.out = 0; b.inbuf = {}; b.fed = {}; b.drainAcc = 0; }
   return b;
 }
 
@@ -79,9 +82,12 @@ export function cleanTargets() {
 export function resetGame() {
   S.cash = 0;
   S.cashRate = 0;
+  S._earnAcc = 0;
+  S._earnTime = 0;
   S.grid = Array(16).fill(null);
   S.open = Array(16).fill(false);
   S.trucks = [];
+  S.transit = [];
   for (const k in BUILDINGS) {
     S.speed[k] = 0;
     S.efficiency[k] = 0;

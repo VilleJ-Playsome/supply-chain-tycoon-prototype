@@ -4,9 +4,8 @@
     {
       "name": "supply-chain-tycoon",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server"],
-      "port": 3000,
-      "autoPort": true
+      "runtimeArgs": ["-m", "http.server", "8765"],
+      "port": 8765
     }
   ]
 }

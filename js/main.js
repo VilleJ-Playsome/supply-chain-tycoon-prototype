@@ -34,14 +34,19 @@ function flashSave(msg) {
 setInterval(saveGame, 30_000);
 window.addEventListener('beforeunload', saveGame);
 
-let last = performance.now(), acc = 0;
+let last = performance.now(), acc = 0, slowAcc = 0;
 function loop(now) {
   let dt = (now - last) / 1000;
   last = now;
   if (dt > 0.5) dt = 0.5;
   tick(dt);
-  acc += dt;
-  if (acc >= 0.1) { renderLive(); acc = 0; }
+  acc += dt; slowAcc += dt;
+  if (acc >= 0.1) {
+    const slow = slowAcc >= 1.0;
+    if (slow) slowAcc = 0;
+    renderLive(slow);
+    acc = 0;
+  }
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);

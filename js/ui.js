@@ -304,11 +304,13 @@ export function renderTrucks() {
   truckSvg.innerHTML = out;
 }
 
-export function renderLive() {
+export function renderLive(slow = false) {
   $('cash').textContent = money(S.cash);
-  const r = $('rate');
-  r.textContent = (S.cashRate >= 0 ? '+' : '') + S.cashRate.toFixed(2);
-  r.style.color = S.cashRate >= 0 ? 'var(--teal)' : 'var(--red)';
+  if (slow) {
+    const r = $('rate');
+    r.textContent = (S.cashRate >= 0 ? '+' : '') + S.cashRate.toFixed(2);
+    r.style.color = S.cashRate >= 0 ? 'var(--teal)' : 'var(--red)';
+  }
 
   let rebuild = false;
   document.querySelectorAll('.slot[data-i]').forEach(el => {
@@ -317,15 +319,17 @@ export function renderLive() {
     if (lf) {
       const frac = clamp01(s.runF), c = loadColor(frac);
       lf.style.width = Math.round(frac * 100) + '%'; lf.style.background = c;
-      const lp = el.querySelector('.lp'); if (lp) { lp.textContent = runText(s); lp.style.color = c; }
-      const fe = el.querySelector('.feed'); if (fe) fe.innerHTML = feedHTML(s);
+      if (slow) {
+        const lp = el.querySelector('.lp'); if (lp) { lp.textContent = runText(s); lp.style.color = c; }
+        const fe = el.querySelector('.feed'); if (fe) fe.innerHTML = feedHTML(s);
+      }
     }
     const cool = el.querySelector('.cool');
     if (s.cooldown > 0) { if (cool) cool.textContent = 'MOVING ' + s.cooldown.toFixed(1) + 's'; else rebuild = true; }
     else if (cool) { rebuild = true; }
   });
   document.querySelectorAll('#menu [data-cost]').forEach(btn => { btn.disabled = btn.dataset.max === 'true' || S.cash < +btn.dataset.cost; });
-  renderBottleneck();
+  if (slow) renderBottleneck();
   renderTrucks();
   if (rebuild) render();
 }
